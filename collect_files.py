@@ -39,10 +39,10 @@ keys.extend(['mean_llh', 'var_llh', 'zeros'])
 inds = np.argsort(res_dict['mean_llh'])
 
 print('Sorted by mean')
-for i in inds[:200]:
+for i in inds[:100]:
     pstr = ''
     for key in keys:
-        pstr += '{} {:.3f} '.format(key, res_dict[key][i])
+        pstr += '{} {:.4f} '.format(key, res_dict[key][i])
     print pstr
 
 
