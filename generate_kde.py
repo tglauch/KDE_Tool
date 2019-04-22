@@ -85,17 +85,18 @@ def create_KDE(args, inds=None, bws={}, mc=None):
 
     print('Load and Update the Monte Carlo')
     config = read_config()
+    cfg_keys = config['keys']
     if mc is None:
         if args['mc'] is not None:
             mc_path = args['mc']
         else:
             mc_path = str(config['IC_MC']['path'])
         mc = np.load(str(mc_path))
-        mc = mc_cut(mc)
+        mc = mc_cut(mc, config)
         if inds is not None:
             print('Cut on given indices..')
             mc = mc[inds]
-    settings, grid = model.setup_KDE(mc)
+    settings, grid = model.setup_KDE(mc, cfg_keys)
     mc_conv = len(mc)
     print('Use {} mc events'.format(mc_conv))
     for key in settings.keys():
@@ -110,18 +111,18 @@ def create_KDE(args, inds=None, bws={}, mc=None):
         print('Use pre-calculated input weights')
         weights = mc['cur_weight']
     elif args['weights'] == 'pl':
-        if 'orig_OW' in mc.dtype.fields:
-            weights = mc['orig_OW'] * plaw(mc['trueE'], phi0=args['phi0'],
-                                           gamma=args['gamma'])
+        weights = mc[cfg_keys['ow']] * plaw(mc[cfg_keys['trueE']],
+                                                  phi0=args['phi0'],
+                                                  gamma=args['gamma'])
     elif args['weights'] == 'conv':
-        weights = mc['conv']
+        weights = mc[cfg_keys['conv']]
     elif args['weights'] == 'conv+pl':
         #diff_weight = mc['orig_OW'] * plaw(mc['trueE'], phi0=args['phi0'],
         #                                   gamma=args['gamma'])
-        weights = mc['conv'] + mc['astro']
+        weights = mc[cfg_keys['conv']] + mc[cfg_keys['astro']]
         print('Rates [1/yr]:')
-        print(np.sum(mc['conv']) * np.pi * 1e7)
-        print(np.sum(mc['astro']) * np.pi * 1e7)
+        print(np.sum(mc[cfg_keys['conv']]) * np.pi * 1e7)
+        print(np.sum(mc[cfg_keys['astro']]) * np.pi * 1e7)
     else:
         print('{} is not a valid weights argument'.format(args['weights']))
         sys.exit(0)
